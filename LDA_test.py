@@ -4,6 +4,10 @@ from gensim.models import LdaModel
 from pprint import pprint
 import pyLDAvis.gensim_models as gensimvis
 import pyLDAvis
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 # Example text corpus (list of documents, each document = list of tokens)
 texts = [
