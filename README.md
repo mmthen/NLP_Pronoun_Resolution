@@ -15,3 +15,6 @@ python -m coreferee install en
 
 pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0.tar.gz
 
+This is just a visualization aid for the LDA model
+
+conda install -c conda-forge pyldavis
