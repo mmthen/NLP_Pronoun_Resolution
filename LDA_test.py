@@ -43,6 +43,7 @@ topic_distribution = lda_model.get_document_topics(new_bow)
 print("\nTopic distribution for new document:")
 pprint(topic_distribution)
 
+#Help visualize the model
 vis = gensimvis.prepare(lda_model, corpus, dictionary)
 pyLDAvis.save_html(vis, "lda_visualization.html")
-print("✅ Visualization saved to lda_visualization.html — open it in your browser!")
+print("Visualization saved to lda_visualization.html")
