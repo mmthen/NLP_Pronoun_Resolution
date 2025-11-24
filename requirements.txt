@@ -1,0 +1,10 @@
+spacy==3.5.4
+gensim>=4.3,<5
+coreferee==1.4.1
+pydantic<1.11,!=1.8,!=1.8.1
+pyldavis~=3.4.1
+datasets
+
+# spaCy models
+https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0.tar.gz

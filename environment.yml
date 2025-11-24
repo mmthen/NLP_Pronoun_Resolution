@@ -1,0 +1,28 @@
+name: nlp-venv
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+  - setuptools
+  - wheel
+
+  # Fast, prebuilt installations through conda
+  - gensim>=4.3,<5
+  - pyldavis
+
+  - pip:
+      # Fast pip install for spaCy (much faster than conda)
+      - spacy==3.5.4
+
+      # spaCy ecosystem deps
+      - coreferee==1.4.1
+
+      # Stable, compatible pydantic (no warnings)
+      - pydantic==1.10.8
+
+      # spaCy models (downloaded directly)
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0.tar.gz
+      - https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0.tar.gz
