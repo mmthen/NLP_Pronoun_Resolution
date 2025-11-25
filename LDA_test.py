@@ -27,30 +27,22 @@ def load_all_documents(root="data/raw"):
                     docs.append(f.read())
     return docs
 
-def tokenize(text):
-    text = text.lower()
-    text = re.sub(r'[^a-z\s]', ' ', text)
-    tokens = text.split()
-    tokens = [w for w in tokens if w not in STOPWORDS and len(w) > 2]
-    return tokens
-
 raw_docs = load_all_documents()
-texts = [tokenize(doc) for doc in raw_docs]
+texts = [doc for doc in raw_docs]
+
 # Create a dictionary mapping for all words
 dictionary = corpora.Dictionary(texts)
 
 # Convert the tokenized documents into bag-of-words representation
 corpus = [dictionary.doc2bow(text) for text in texts]
 
-print("Dictionary tokens:", dictionary.token2id)
-print("Corpus:", corpus)
-
+# Build LDA model
 lda_model = LdaModel(
     corpus=corpus,
     id2word=dictionary,
-    num_topics=5,        # number of topics you want to extract
+    num_topics=5,        
     random_state=42,
-    passes=10,           # number of passes through the corpus
+    passes=10,           
     alpha='auto',
     eta='auto'
 )
