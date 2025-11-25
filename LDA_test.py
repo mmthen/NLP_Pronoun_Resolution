@@ -4,6 +4,7 @@ import pyLDAvis
 import warnings
 import os
 import re
+import preprocess
 
 from gensim import corpora
 from gensim.models import LdaModel
@@ -28,7 +29,7 @@ def load_all_documents(root="data/raw"):
     return docs
 
 raw_docs = load_all_documents()
-texts = [doc for doc in raw_docs]
+texts = [preprocess(doc) for doc in raw_docs]
 
 # Create a dictionary mapping for all words
 dictionary = corpora.Dictionary(texts)
