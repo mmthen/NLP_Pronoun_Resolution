@@ -3,8 +3,11 @@ gensim>=4.3,<5
 coreferee==1.4.1
 pydantic<1.11,!=1.8,!=1.8.1
 pyldavis~=3.4.1
-datasets
-
+datasets~=4.4.1
+numpy
 # spaCy models
 https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0.tar.gz
 https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0.tar.gz
+
+numpy~=1.26.4
+scipy~=1.13.1
