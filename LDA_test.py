@@ -6,6 +6,7 @@ import os
 import re
 import preprocess
 import spacy
+import coreferee
 
 from gensim import corpora
 from gensim.models import LdaModel
@@ -47,6 +48,15 @@ raw_docs = trimmed_docs
 def resolve_coref_text(doc: spacy.tokens.Doc) -> str:
  
     tokens = [t.text for t in doc]
+
+    num_mentions_replaced = 0
+    num_tokens_replaced = 0
+
+    chains = doc._.coref_chains
+
+    if not chains:
+        return doc.text, 0, 0
+
     for chain in doc._.coref_chains:
         # antecedent is the text of the first mention in the chain
         first_mention = chain[0]  
@@ -56,27 +66,76 @@ def resolve_coref_text(doc: spacy.tokens.Doc) -> str:
         for mention in list(chain)[1:]:
             if not mention:
                 continue
+
+            is_pronoun_mention = all(doc[i].pos_ == "PRON" for i in mention)
             first_idx = mention[0]
+
+            if is_pronoun_mention:
+                num_mentions_replaced += 1
+                num_tokens_replaced += len(mention)
+
             tokens[first_idx] = antecedent
             for j in mention[1:]:
                 tokens[j] = ""
 
     resolved = " ".join(t for t in tokens if t)
-    return resolved
+    return resolved, num_mentions_replaced, num_tokens_replaced
 
 nlp = spacy.load("en_core_web_lg")
 
+if not nlp.has_pipe("coreferee"):
+    nlp.add_pipe("coreferee")
+
+def test_coref_on_samples():
+    samples = [
+    "John loves his dog. He takes it for walks every day and he feeds it carefully.",
+    "Mary told Susan that she would help her with the project, and she kept her promise.",
+    ]
+
+    print("\nCoreference test samples")
+    for s in samples:
+        doc = nlp(s)
+        print("\nOriginal:", s)
+
+        # Show chains
+        if doc._.coref_chains:
+            print("Coref chains:")
+            for chain in doc._.coref_chains:
+                chain_texts = [" ".join(doc[i].text for i in mention) for mention in chain]
+                print("  -", " | ".join(chain_texts))
+        else:
+            print("No coreference chains found.")
+
+        resolved, m_repl, t_repl = resolve_coref_text(doc)
+        print("Resolved:", resolved)
+        print(f"Mentions replaced: {m_repl}, tokens replaced: {t_repl}")
+
+print("Coreference Test")
+test_coref_on_samples() 
+
 def apply_coreferee_to_corpus(docs):
     resolved_docs = []
+    total_mentions = 0
+    total_tokens = 0
+
     for i, text in enumerate(docs):
         print(f"Applying pronoun resolution {i+1}/{len(docs)}", end="\r")
         doc = nlp(text)
         try:
-            resolved = resolve_coref_text(doc)
+            resolved, mentions_replaced, tokens_replaced = resolve_coref_text(doc)
         except Exception:
-            resolved = text  
+            resolved = text
+            mentions_replaced = 0
+            tokens_replaced = 0  
+
         resolved_docs.append(resolved)
-    print() 
+        total_mentions += mentions_replaced
+        total_tokens += tokens_replaced
+
+    print()
+    print(f"Total pronoun mentions replaced: {total_mentions}")
+    print(f"Total pronoun tokens replaced:   {total_tokens}")
+
     return resolved_docs
 
 
