@@ -161,7 +161,7 @@ def run_lda_pipeline(texts_tokenized, num_topics, html_filename, label):
     print("\nTopics:")
     pprint(lda_model.print_topics())
 
-    # Per-document topic distributions (optional)
+    # Per-document topic distributions
     doc_topics = [lda_model.get_document_topics(bow) for bow in corpus]
     for i, topics in enumerate(doc_topics[:5]):  # show first 5 docs
         print(f"\nDocument {i} ({label}):")
