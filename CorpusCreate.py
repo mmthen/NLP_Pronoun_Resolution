@@ -18,37 +18,50 @@ base_url_template = "https://www.gutenberg.org/files/{id}/{id}-0.txt"
 root_dir = "data/raw"
 os.makedirs(root_dir, exist_ok=True)
 
-def clean_text(text):
-    """Remove Project Gutenberg license header + footer"""
-    start = text.find("*** START")
-    if start == -1:
-        start = 0
-    else:
-        start = text.find("\n", start) + 1
+def clean_text(text: str) -> str:
+    start_marker = "*** START"
+    end_marker = "*** END"
 
-    end = text.find("*** END")
+    start = text.find(start_marker)
+    if start != -1:
+        # move to line after the marker
+        newline_pos = text.find("\n", start)
+        if newline_pos != -1:
+            start = newline_pos + 1
+        else:
+            start = 0
+    else:
+        start = 0  # no START marker, keep from beginning
+
+    end = text.find(end_marker)
     if end == -1:
         end = len(text)
 
-    cleaned = text[start:end]
-    return cleaned.strip()
+    cleaned = text[start:end].strip()
+
+    # fallback to original text if cleaning failed
+    if not cleaned:
+        return text.strip()
+
+    return cleaned
+
+base_url_templates = [
+    "https://www.gutenberg.org/files/{id}/{id}-0.txt",
+    "https://www.gutenberg.org/files/{id}/{id}.txt",
+]
 
 def try_download(gid):
-    """Try several common Gutenberg filename patterns for a given ID."""
-    url_patterns = [
-        f"https://www.gutenberg.org/files/{gid}/{gid}-0.txt",
-        f"https://www.gutenberg.org/files/{gid}/{gid}-8.txt",
-        f"https://www.gutenberg.org/files/{gid}/{gid}.txt",
-    ]
-
-    for url in url_patterns:
+    """Try a couple of common Gutenberg URL patterns. Return text or None."""
+    for tpl in base_url_templates:
+        url = tpl.format(id=gid)
         try:
-            r = requests.get(url, timeout=15)
+            r = requests.get(url, timeout=20)
             r.raise_for_status()
-            return r.text
-        except Exception:
-            continue
-
+            text = r.text
+            if text and text.strip():
+                return text
+        except Exception as e:
+            print(f"  TRY FAILED for {gid} at {url}: {e}")
     return None
 
 
@@ -73,6 +86,10 @@ for topic, ids in corpus_ids.items():
 
         if lang != "en":
             print(f"Skipping {gid} (language detected = {lang})")
+            continue
+
+        if not text.strip():
+            print(f"WARNING: cleaned text for {gid} in {topic} is empty, skipping file.")
             continue
 
         out_file = os.path.join(topic_path, f"{gid}.txt")
