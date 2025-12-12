@@ -228,13 +228,13 @@ def print_word_frequency_shift(texts_no_coref, texts_with_coref, top_n=20):
     print(f"{'WORD':<20}{'rel_freq_before':>18}{'rel_freq_after':>18}{'delta':>12}")
     for w, r_before, r_after, delta in rows_sorted[:top_n]:
         print(f"{w:<20}{r_before:>18.6f}{r_after:>18.6f}{delta:>12.6f}")
-        
+
 print_word_frequency_shift(texts_no_coref, texts_with_coref, top_n=20)
 
 print("\nTopic Word Comparison (Before vs After Coreference)")
 
 NUM_TOP_WORDS = 10  #how many words per topic to show
-TOPICS_TO_SHOW = [0, 1]  #just topics 0 and 1 for the slide
+TOPICS_TO_SHOW = [0, 1]  #just topics 0 and 1
 
 #Get topics as lists of (word, prob) pairs, unformatted
 topics_no = dict(lda_no_coref.show_topics(num_words=NUM_TOP_WORDS, formatted=False))
