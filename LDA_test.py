@@ -8,6 +8,8 @@ import preprocess
 import spacy
 import coreferee
 
+from collections import Counter
+from pprint import pprint
 from gensim import corpora
 from gensim.models import LdaModel
 from pprint import pprint
@@ -197,3 +199,54 @@ lda_with_coref, corpus_with_coref, dict_with_coref = run_lda_pipeline(
     html_filename="lda_visualization_with_resolution.html",
     label="with_coref"
 )
+
+
+
+def print_word_frequency_shift(texts_no_coref, texts_with_coref, top_n=20):
+    # Flatten corpora
+    tokens_no = [tok for doc in texts_no_coref for tok in doc]
+    tokens_yes = [tok for doc in texts_with_coref for tok in doc]
+
+    freq_no = Counter(tokens_no)
+    freq_yes = Counter(tokens_yes)
+
+    total_no = sum(freq_no.values())
+    total_yes = sum(freq_yes.values())
+
+    all_words = set(freq_no.keys()) | set(freq_yes.keys())
+
+    rows = []
+    for w in all_words:
+        rel_no = freq_no[w] / total_no if total_no > 0 else 0.0
+        rel_yes = freq_yes[w] / total_yes if total_yes > 0 else 0.0
+        diff = rel_yes - rel_no
+        rows.append((w, rel_no, rel_yes, diff))
+
+    rows_sorted = sorted(rows, key=lambda x: abs(x[3]), reverse=True)
+
+    print("\nWord Frequency Shift (Before vs After coreference)")
+    print(f"{'WORD':<20}{'rel_freq_before':>18}{'rel_freq_after':>18}{'delta':>12}")
+    for w, r_before, r_after, delta in rows_sorted[:top_n]:
+        print(f"{w:<20}{r_before:>18.6f}{r_after:>18.6f}{delta:>12.6f}")
+        
+print_word_frequency_shift(texts_no_coref, texts_with_coref, top_n=20)
+
+print("\nTopic Word Comparison (Before vs After Coreference)")
+
+NUM_TOP_WORDS = 10  #how many words per topic to show
+TOPICS_TO_SHOW = [0, 1]  #just topics 0 and 1 for the slide
+
+#Get topics as lists of (word, prob) pairs, unformatted
+topics_no = dict(lda_no_coref.show_topics(num_words=NUM_TOP_WORDS, formatted=False))
+topics_yes = dict(lda_with_coref.show_topics(num_words=NUM_TOP_WORDS, formatted=False))
+
+for tid in TOPICS_TO_SHOW:
+    print(f"\nTopic {tid} (before vs after)")
+    before_words = topics_no.get(tid, [])
+    after_words = topics_yes.get(tid, [])
+
+    print("Before coreference:")
+    print(", ".join(f"{w} ({p:.3f})" for w, p in before_words))
+
+    print("After coreference:")
+    print(", ".join(f"{w} ({p:.3f})" for w, p in after_words))
